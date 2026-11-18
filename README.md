@@ -2,6 +2,8 @@
 
 Una muestra pequeña y ejecutable de cálculo de importes, validación y separación de entrada/salida. **Preparada para este portfolio con asistencia de IA**: no es el código de Newblock ni una versión de un producto comercial.
 
+[![Pruebas Java](https://github.com/IngeniaSoftwareok/demo-presupuestos-java/actions/workflows/verify.yml/badge.svg)](https://github.com/IngeniaSoftwareok/demo-presupuestos-java/actions/workflows/verify.yml)
+
 ## Qué hace
 
 Lee conceptos de un CSV, calcula sus importes, aplica un descuento y un recargo de demostración y escribe un resultado JSON. No inicia servicios, no se conecta a una base y no modifica el archivo de entrada.
@@ -49,10 +51,10 @@ El dominio no depende de archivos, frameworks o servicios externos. La ejecució
 
 La preparación local ejecutó **15 casos de prueba sin fallos**. Cubren redondeo por línea, orden de descuento/recargo, descuento total, invariancia frente al orden de conceptos, conservación del snapshot, entrada CSV, texto escapado y rechazo de entradas sin emitir resultados parciales.
 
-El repositorio incluye un workflow de GitHub Actions para compilar, probar y ejecutar el ejemplo en Java 21. Su resultado remoto se conocerá al publicarlo; no se presenta como una CI ya ejecutada.
+El workflow de GitHub Actions compila, prueba y ejecuta el ejemplo en Java 21. La primera ejecución remota terminó correctamente: [ver ejecución](https://github.com/IngeniaSoftwareok/demo-presupuestos-java/actions/runs/44332511792). El badge enlaza al estado de las ejecuciones del repositorio.
 
 ## Decisiones y límites
 
 Se eligió un problema acotado que se pueda recorrer de principio a fin. La muestra permite revisar reglas de importes y adaptadores, no acredita por sí sola una plataforma empresarial, seguridad multiusuario o experiencia productiva de este programa.
 
-[Agustin Crudo · Ingenia Software](https://github.com/IngeniaSoftwareok) · [Email](mailto:ingeniasoftwareok@gmail.com)
+[Agustin Crudo · Ingenia Software](https://github.com/IngeniaSoftwareok) · [Portfolio](https://ingeniasoftwareok.github.io/portfolio/) · [Email](mailto:ingeniasoftwareok@gmail.com)
