@@ -3,7 +3,7 @@ package ar.com.ingenia.quote.domain;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-/** Sin archivos, frameworks ni estado compartido: solo reglas de esta demostracion. */
+/** Calcula el subtotal, los ajustes y el total de un presupuesto. */
 public final class QuoteCalculator {
     public QuoteResult calculate(Quote quote) {
         BigDecimal subtotal = quote.lines().stream().map(QuoteLine::amount)

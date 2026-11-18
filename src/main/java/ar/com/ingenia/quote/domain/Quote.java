@@ -8,7 +8,7 @@ import java.util.List;
 public record Quote(List<QuoteLine> lines, BigDecimal discountPercent, BigDecimal surchargePercent) {
     public Quote {
         if (lines == null || lines.isEmpty() || lines.size() > 200 || lines.stream().anyMatch(l -> l == null)) {
-            throw new IllegalArgumentException("El presupuesto necesita entre 1 y 200 lineas validas.");
+            throw new IllegalArgumentException("El presupuesto necesita entre 1 y 200 líneas válidas.");
         }
         lines = List.copyOf(lines);
         discountPercent = percentage(discountPercent, "descuento");

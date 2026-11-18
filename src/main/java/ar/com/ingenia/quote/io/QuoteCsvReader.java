@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-/** CSV UTF-8 con punto decimal y separador ';'. No admite campos de varias lineas. */
+/** CSV UTF-8 con punto decimal y separador ';'. No admite campos de varias líneas. */
 public final class QuoteCsvReader {
     private static final List<String> HEADER = List.of("codigo", "descripcion", "cantidad", "precio_unitario");
 
@@ -28,10 +28,10 @@ public final class QuoteCsvReader {
                 List<String> f = fields(row);
                 if (f.size() != 4) throw new IllegalArgumentException("Se requieren cuatro columnas.");
                 if (!f.get(2).matches("[0-9]+(?:\\.[0-9]+)?") || !f.get(3).matches("[0-9]+(?:\\.[0-9]+)?")) {
-                    throw new IllegalArgumentException("Usar numeros positivos con punto decimal, sin separador de miles.");
+                    throw new IllegalArgumentException("Usar números no negativos con punto decimal, sin separador de miles.");
                 }
                 lines.add(new QuoteLine(f.get(0), f.get(1), new BigDecimal(f.get(2)), new BigDecimal(f.get(3))));
-                if (lines.size() > 200) throw new IllegalArgumentException("Maximo: 200 lineas.");
+                if (lines.size() > 200) throw new IllegalArgumentException("Máximo: 200 líneas.");
             } catch (IllegalArgumentException e) {
                 throw new IllegalArgumentException("Fila " + number + ": " + e.getMessage(), e);
             }

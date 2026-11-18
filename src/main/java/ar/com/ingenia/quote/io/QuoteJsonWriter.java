@@ -4,7 +4,7 @@ import ar.com.ingenia.quote.domain.QuoteLine;
 import ar.com.ingenia.quote.domain.QuoteResult;
 import java.util.stream.Collectors;
 
-/** Serializador acotado al resultado inmutable de esta demo, sin dependencias de ejecucion. */
+/** Escribe el resultado como JSON con importes decimales en texto. */
 public final class QuoteJsonWriter {
     public String write(QuoteResult r) {
         String lines = r.quote().lines().stream().map(this::line).collect(Collectors.joining(",\n"));

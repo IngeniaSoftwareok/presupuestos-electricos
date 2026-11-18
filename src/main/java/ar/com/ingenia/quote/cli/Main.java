@@ -34,7 +34,7 @@ public final class Main {
                     discount = percentage(args[i].substring("--descuento=".length())); discountSeen = true;
                 } else if (args[i].startsWith("--recargo=") && !surchargeSeen) {
                     surcharge = percentage(args[i].substring("--recargo=".length())); surchargeSeen = true;
-                } else throw new IllegalArgumentException("Opcion desconocida o repetida: " + args[i]);
+                } else throw new IllegalArgumentException("Opción desconocida o repetida: " + args[i]);
             }
             Path input = Path.of(args[0]);
             if (Files.size(input) > 262144) throw new IllegalArgumentException("El CSV debe ocupar hasta 256 KiB.");
@@ -51,7 +51,7 @@ public final class Main {
 
     private static BigDecimal percentage(String text) {
         if (!text.matches("[0-9]+(?:\\.[0-9]{1,2})?")) {
-            throw new IllegalArgumentException("Porcentaje invalido: usar punto decimal y hasta dos decimales.");
+            throw new IllegalArgumentException("Porcentaje inválido: usar punto decimal y hasta dos decimales.");
         }
         return new BigDecimal(text);
     }
