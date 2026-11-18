@@ -57,4 +57,4 @@ GitHub Actions compila el proyecto, ejecuta las pruebas y corre el ejemplo en Ja
 
 Elegí `BigDecimal` para controlar la precisión y el redondeo de los importes. Mantuve las reglas en el dominio y la entrada/salida en adaptadores separados para poder probar el cálculo de forma independiente.
 
-[Agustin Crudo · Ingenia Software](https://github.com/IngeniaSoftwareok) · [Portfolio](https://ingeniasoftwareok.github.io/portfolio/) · [Email](mailto:ingeniasoftwareok@gmail.com)
+[Agustin Crudo](https://github.com/IngeniaSoftwareok) · [Portfolio](https://ingeniasoftwareok.github.io/portfolio/) · [Contacto personal](mailto:agustincrudo01@gmail.com)
