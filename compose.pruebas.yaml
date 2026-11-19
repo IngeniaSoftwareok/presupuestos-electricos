@@ -1,0 +1,4 @@
+services:
+  db:
+    ports:
+      - "127.0.0.1:${DEMO_PUERTO_DB:-33316}:3306"

@@ -1,0 +1,49 @@
+name: presupuestos-electricos
+
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: presupuestos
+      MYSQL_USER: presupuestos
+      MYSQL_PASSWORD: ${DEMO_DB_PASSWORD:-presupuestos-local}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+    volumes:
+      - datos:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 3s
+      timeout: 3s
+      retries: 25
+
+  api:
+    build: ./api
+    environment:
+      DEMO_DB_URL: "jdbc:mysql://db:3306/presupuestos?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&rewriteBatchedStatements=true"
+      DEMO_DB_PASSWORD: ${DEMO_DB_PASSWORD:-presupuestos-local}
+      DEMO_ORIGEN: ${DEMO_ORIGEN:-http://localhost:8083}
+      DEMO_COOKIE_SEGURA: ${DEMO_COOKIE_SEGURA:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/api/salud"]
+      interval: 3s
+      timeout: 3s
+      retries: 25
+
+  web:
+    build: ./web
+    ports:
+      - "127.0.0.1:${DEMO_PUERTO:-8083}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  datos:

@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: ${DEMO_DB_URL:jdbc:mysql://localhost:3306/presupuestos?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true}
+    username: ${DEMO_DB_USER:presupuestos}
+    password: ${DEMO_DB_PASSWORD:presupuestos-local}
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 5000
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+    parser:
+      strict-duplicate-detection: true
+server:
+  forward-headers-strategy: none
+  max-http-request-header-size: 8KB
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+demo:
+  origen: ${DEMO_ORIGEN:http://localhost:8083}
+  cookie-segura: ${DEMO_COOKIE_SEGURA:false}

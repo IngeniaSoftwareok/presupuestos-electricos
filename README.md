@@ -1,60 +1,56 @@
-# Demo de presupuestos en Java
+# Presupuestos para instalaciones eléctricas
 
-Desarrollé esta demo independiente para el portfolio, con asistencia de IA. Calcula presupuestos a partir de un CSV y genera un resultado en JSON.
+Hice esta demo para mostrar cómo llevo una regla de negocio a una aplicación que se puede usar de punta a punta. Podés armar un presupuesto, revisar el total, guardarlo y volver a abrirlo desde el historial. El catálogo y los clientes son ficticios.
 
-[![Pruebas Java](https://github.com/IngeniaSoftwareok/demo-presupuestos-java/actions/workflows/verify.yml/badge.svg)](https://github.com/IngeniaSoftwareok/demo-presupuestos-java/actions/workflows/verify.yml)
+**[Probar la demo](https://ingeniasoftwareok.github.io/presupuestos-electricos/)** · [Ver el recorrido en video](docs/recorrido.mp4) · [Portfolio](https://ingeniasoftwareok.github.io/portfolio/)
 
-## Qué hace
+[![Verificación del proyecto](https://github.com/IngeniaSoftwareok/presupuestos-electricos/actions/workflows/verificar.yml/badge.svg)](https://github.com/IngeniaSoftwareok/presupuestos-electricos/actions/workflows/verificar.yml)
 
-El programa lee los conceptos de un CSV, calcula el subtotal y aplica un descuento y un recargo. Se ejecuta desde la terminal y escribe el resultado en JSON.
+![Editor de presupuestos con el ejemplo cargado](docs/editor.png)
 
-## Ejecutar
+Para ver el flujo rápido, tocá **Cargar ejemplo**, cambiá una cantidad y guardá. En el detalle podés imprimirlo o elegir **Guardar como PDF** en el diálogo del navegador. El ejemplo, tal como viene, queda en **$134.828,75**.
 
-Requisitos: **JDK 21** y **Maven 3.9 o posterior**. La primera compilación puede descargar dependencias y plugins de Maven.
+## Cómo está armado
+
+- **Edición web.** Abre con un enlace y guarda el historial en IndexedDB, en el mismo navegador. Usa el catálogo de ejemplo y calcula la vista previa con enteros en centavos. El historial queda en ese dispositivo y se puede perder si se borran los datos del sitio.
+- **Edición completa.** Usa la misma interfaz en Next.js y TypeScript, con una API en Java 21 y Spring Boot y una base MySQL. Spring calcula el importe definitivo y guarda el presupuesto junto con sus renglones en una transacción. Flyway prepara las tablas y carga el catálogo.
+
+Armé las dos ediciones para que cualquiera pueda probar la aplicación y, si le interesa el backend, pueda leer y ejecutar el recorrido completo con la base real.
+
+## Lo que me interesaba resolver
+
+**Reintentos.** Si se corta la conexión después de que se guardó un presupuesto, el editor conserva los datos y la clave del intento. MySQL tiene una restricción única por espacio y clave. La API recupera el presupuesto si el pedido coincide y responde `409` cuando alguien reutiliza esa clave con otros datos. En la prueba de integración, seis envíos concurrentes dejan un solo presupuesto.
+
+**Importes.** Redondeo cada renglón antes de sumarlo y calculo el descuento sobre ese subtotal. El servidor consulta los precios del catálogo y guarda una copia de los valores usados, así el historial conserva el importe original.
+
+**Historial.** Consulto hasta 15 presupuestos por vez y uso un cursor sobre el índice del historial. El listado trae los resúmenes. Los renglones se consultan al abrir el detalle.
+
+**Acceso por navegador.** En la edición completa, el historial se asocia a una cookie aleatoria `HttpOnly` y `SameSite=Strict`. La base guarda su huella y las consultas filtran por ese espacio. Además, el servidor comprueba el origen de los guardados y usa consultas con parámetros. La demo está pensada para datos ficticios.
+
+## Levantar la edición completa
+
+Con Docker y Docker Compose, ejecutá este comando desde la raíz del repositorio.
 
 ```sh
-mvn --batch-mode --no-transfer-progress clean verify
-java -jar target/demo-presupuestos-java-1.0.0.jar examples/presupuesto-demo.csv --descuento=10 --recargo=5
+docker compose up --build --wait
 ```
 
-Resultado de referencia: subtotal **4351.50**, descuento **435.15**, recargo **195.82**, total **4112.17**. [Salida completa esperada](examples/resultado-esperado.json).
+Abrí [http://localhost:8083](http://localhost:8083). La primera compilación descarga imágenes y dependencias. Compose publica solamente la web en la interfaz local. Si usás otra dirección, actualizá `DEMO_ORIGEN`. Para exponer la edición completa fuera del equipo, configurá HTTPS, `DEMO_COOKIE_SEGURA=true` y una contraseña de MySQL propia.
 
-Sin argumentos o con `--help`, el programa muestra el uso. Entrada válida: código de salida 0. Error de entrada: código 2, mensaje por stderr y ningún resultado parcial por stdout.
-
-## Entrada y reglas
-
-- UTF-8, separador `;`, punto decimal, sin separador de miles. [CSV de ejemplo](examples/presupuesto-demo.csv).
-- Cabecera exacta: `codigo;descripcion;cantidad;precio_unitario`.
-- Se admiten campos entre comillas, separadores dentro de ellos y comillas duplicadas. No se admiten campos de varias líneas.
-- Entre 1 y 200 conceptos. El comando admite un archivo de hasta 256 KiB.
-- Cantidad positiva, hasta tres decimales; precio no negativo, hasta dos. No se truncan entradas inválidas.
-- Cantidades y precios: hasta 16 dígitos significativos. Descuento y recargo entre 0 y 100, hasta dos decimales.
-- Cada importe de línea se redondea a dos decimales con `HALF_UP`. El subtotal suma esas líneas. El descuento se calcula sobre el subtotal; el recargo, sobre el importe después del descuento. Cada ajuste también se redondea a dos decimales.
-- Los importes se escriben como cadenas decimales en JSON para evitar conversiones implícitas a coma flotante.
-
-El descuento y el recargo son porcentajes configurables sobre el presupuesto. El ejemplo utiliza una regla simple de cálculo, sin impuestos.
-
-## Estructura
-
-```text
-src/main/java/ar/com/ingenia/quote/
-  domain/    Entradas inmutables, reglas y resultado
-  io/        Lectura CSV y escritura JSON
-  cli/       Argumentos, archivos y códigos de salida
-src/test/    Casos de negocio y entrada/salida
-examples/    Datos ficticios y resultado reproducible
+```sh
+docker compose down
 ```
 
-Separé las reglas de cálculo de la lectura CSV, la escritura JSON y los argumentos del comando. El JAR se ejecuta con el JDK; JUnit se utiliza para las pruebas.
+El volumen de MySQL conserva el historial entre arranques.
 
-## Pruebas
+## Dónde seguir el código
 
-Incluí 15 pruebas de cálculo y entrada/salida: redondeo por línea, orden de los ajustes, descuento total, copia de los datos de entrada, lectura de CSV, escape de texto y rechazo de entradas inválidas.
+| Si querés ver… | Empezá por… |
+| --- | --- |
+| El cálculo y el guardado | [GestionPresupuestos.java](api/src/main/java/ar/com/ingenia/presupuestos/aplicacion/GestionPresupuestos.java) |
+| La transacción, la clave única y el índice | [ArchivoPresupuestos.java](api/src/main/java/ar/com/ingenia/presupuestos/persistencia/ArchivoPresupuestos.java) · [Migración SQL](api/src/main/resources/db/migration/V1__estructura.sql) |
+| Cómo se conserva y reintenta un envío desde la pantalla | [editor.tsx](web/componentes/editor.tsx) |
+| El guardado en la edición web | [navegador.ts](web/lib/navegador.ts) |
+| Qué cubren las pruebas | [Integración con MySQL](api/src/test/java/ar/com/ingenia/presupuestos/GuardadoPresupuestosIT.java) · [Recorrido en navegador](web/tests/presupuestos.spec.ts) |
 
-GitHub Actions compila el proyecto, ejecuta las pruebas y corre el ejemplo en Java 21. El badge del inicio enlaza al workflow.
-
-## Decisiones
-
-Elegí `BigDecimal` para controlar la precisión y el redondeo de los importes. Mantuve las reglas en el dominio y la entrada/salida en adaptadores separados para poder probar el cálculo de forma independiente.
-
-[Agustin Crudo](https://github.com/IngeniaSoftwareok) · [Portfolio](https://ingeniasoftwareok.github.io/portfolio/) · [Contacto personal](mailto:agustincrudo01@gmail.com)
+[API y comandos de verificación](docs/verificacion.md) · [Publicación estática en GitHub Pages](docs/publicar.md)

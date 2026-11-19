@@ -1,0 +1,73 @@
+name: Verificar la demo
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  servidor:
+    name: Java, MySQL y navegador
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: api/pom.xml
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: docker compose -f compose.yaml -f compose.pruebas.yaml up -d --wait db
+      - run: mvn -B -ntp verify
+        working-directory: api
+        env:
+          DEMO_DB_URL: "jdbc:mysql://127.0.0.1:33316/presupuestos?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true"
+      - run: npm ci --no-fund
+        working-directory: web
+      - run: npx playwright install --with-deps chromium
+        working-directory: web
+      - run: docker compose up -d --build --wait
+      - run: npm run test:e2e
+        working-directory: web
+      - if: always()
+        run: docker compose down -v
+
+  web:
+    name: Edición web y accesibilidad
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci --no-fund
+      - run: npm audit --audit-level=high
+      - run: npm test
+      - run: npm run build:web
+        env:
+          DEMO_BASE_PATH: /demo
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          mkdir -p "$RUNNER_TEMP/sitio"
+          cp -a out "$RUNNER_TEMP/sitio/demo"
+          python3 -m http.server 8097 --bind 127.0.0.1 --directory "$RUNNER_TEMP/sitio" >"$RUNNER_TEMP/demo.log" 2>&1 &
+          curl --fail --retry 4 --retry-connrefused http://localhost:8097/demo/ --output /dev/null
+          npm run test:e2e
+        env:
+          DEMO_URL: http://localhost:8097/demo/
+          DEMO_PRUEBA_NAVEGADOR: '1'
